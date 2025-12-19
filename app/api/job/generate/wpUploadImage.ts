@@ -1,7 +1,8 @@
 // axios 버전
-import WPAPI from "wpapi";
 import path from "path";
 import sharp from "sharp";
+// @ts-expect-error - wpapi 타입 정의가 없음
+import WPAPI from "wpapi";
 
 export const uploadToWordPress = async (
   originalPath: string,
@@ -11,7 +12,11 @@ export const uploadToWordPress = async (
   const wp = new WPAPI({
     endpoint: "https://devupbox.com/wp-json",
   });
-  const wpToken = "";
+  const wpToken = process.env.WP_TOKEN;
+
+  if (!wpToken) {
+    throw new Error("WP_TOKEN is not set");
+  }
 
   try {
     let uploadPath = originalPath;

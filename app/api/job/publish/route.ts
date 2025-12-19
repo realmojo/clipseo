@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     const wp = new WPAPI({
       endpoint: "https://devupbox.com/wp-json",
     });
-    const wpToken = "";
+    const wpToken = process.env.WP_TOKEN;
 
     try {
       // WordPress에 게시
