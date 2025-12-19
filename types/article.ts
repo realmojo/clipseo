@@ -2,6 +2,17 @@ export interface CrawledData {
   title: string;
   headings: string[];
   content: string;
+  metaDescription?: string;
+  author?: string;
+  publishedDate?: string;
+  imageUrl?: string;
+  images?: string[];
+  language?: string;
+  keywords?: string[];
+  canonicalUrl?: string;
+  siteName?: string;
+  excerpt?: string;
+  url: string;
 }
 
 export interface GeneratedArticle {
@@ -9,6 +20,7 @@ export interface GeneratedArticle {
   slug: string;
   metaDescription: string;
   html: string;
+  featuredImage: string;
 }
 
 export interface JobResponse {
