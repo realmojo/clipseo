@@ -9,6 +9,8 @@ import {
   Sparkles,
   ArrowLeft,
   Globe,
+  Upload,
+  ExternalLink,
 } from "lucide-react";
 import {
   Card,
@@ -28,6 +30,14 @@ interface GenerateResponse {
   duration?: number;
 }
 
+interface PublishResponse {
+  status: "ok" | "error";
+  postId?: number;
+  postUrl?: string;
+  message?: string;
+  duration?: number;
+}
+
 function GeneratePageContent() {
   const router = useRouter();
   const [crawledData, setCrawledData] = useState<CrawledData | null>(null);
@@ -35,6 +45,11 @@ function GeneratePageContent() {
   const [generatedArticle, setGeneratedArticle] =
     useState<GenerateResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [publishing, setPublishing] = useState(false);
+  const [publishResult, setPublishResult] = useState<PublishResponse | null>(
+    null
+  );
+  const [publishError, setPublishError] = useState<string | null>(null);
 
   useEffect(() => {
     // localStorage에서 크롤링된 데이터 가져오기
@@ -89,6 +104,44 @@ function GeneratePageContent() {
       });
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const handlePublish = async () => {
+    if (!generatedArticle?.data || generatedArticle.status !== "ok") {
+      setPublishError("게시할 글이 없습니다.");
+      return;
+    }
+
+    setPublishing(true);
+    setPublishError(null);
+    setPublishResult(null);
+
+    try {
+      const response = await fetch("/api/job/publish", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ article: generatedArticle.data }),
+      });
+
+      const result: PublishResponse = await response.json();
+      setPublishResult(result);
+
+      if (result.status === "error") {
+        setPublishError(
+          result.message || "WordPress 게시 중 오류가 발생했습니다."
+        );
+      }
+    } catch (err) {
+      setPublishError("네트워크 오류가 발생했습니다. 다시 시도해주세요.");
+      setPublishResult({
+        status: "error",
+        message: "네트워크 오류가 발생했습니다.",
+      });
+    } finally {
+      setPublishing(false);
     }
   };
 
@@ -258,9 +311,83 @@ function GeneratePageContent() {
                     </div>
                   </div>
                 </div>
+
+                {/* WordPress 게시 버튼 */}
+                <div className="pt-6 border-t border-border">
+                  <Button
+                    onClick={handlePublish}
+                    disabled={publishing}
+                    className="w-full"
+                    size="lg"
+                  >
+                    {publishing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        WordPress에 게시 중...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4 mr-2" />
+                        WordPress에 게시
+                      </>
+                    )}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           )}
+
+        {/* Publish Error */}
+        {publishError && (
+          <Card className="w-full border-destructive/50 bg-destructive/10">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <XCircle className="w-5 h-5 text-destructive shrink-0" />
+                <div>
+                  <p className="font-medium text-destructive">게시 오류</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {publishError}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Publish Result */}
+        {publishResult && publishResult.status === "ok" && (
+          <Card className="w-full border-green-500/50 bg-green-500/10">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3 mb-4">
+                <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+                <div>
+                  <p className="font-medium text-green-500">게시 완료</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {publishResult.message ||
+                      "WordPress에 성공적으로 게시되었습니다."}
+                  </p>
+                </div>
+              </div>
+              {publishResult.postUrl && (
+                <div className="mt-4">
+                  <a
+                    href={publishResult.postUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+                  >
+                    게시된 글 보기 <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
+              {publishResult.duration && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  소요 시간: {publishResult.duration.toFixed(2)}초
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </main>
 
       <footer className="w-full py-8 border-t border-border/40 mt-auto">

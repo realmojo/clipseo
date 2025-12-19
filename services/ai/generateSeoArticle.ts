@@ -147,7 +147,7 @@ Return ONLY valid JSON:
 }
 
 HTML rules:
-- Use only: h1, h2, h3, p, ul, li, strong
+- Use only: h2, h3, p, ul, li, strong, table, figure
 - No scripts, no styles
 - Do NOT include html/head/body tags
 
