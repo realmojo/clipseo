@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import {
   Loader2,
@@ -50,8 +50,13 @@ function GeneratePageContent() {
     null
   );
   const [publishError, setPublishError] = useState<string | null>(null);
+  const hasGeneratedRef = useRef(false);
+  const isGeneratingRef = useRef(false);
 
   useEffect(() => {
+    // 중복 실행 방지 (React Strict Mode 대응)
+    if (hasGeneratedRef.current) return;
+    
     // localStorage에서 크롤링된 데이터 가져오기
     try {
       const stored = localStorage.getItem("crawledData");
@@ -59,6 +64,7 @@ function GeneratePageContent() {
         const data = JSON.parse(stored) as CrawledData;
         setCrawledData(data);
         // 데이터를 가져온 후 자동으로 생성 시작
+        hasGeneratedRef.current = true;
         handleGenerate(data);
       } else {
         setError("크롤링된 데이터가 없습니다. 먼저 URL을 크롤링해주세요.");
@@ -69,6 +75,10 @@ function GeneratePageContent() {
   }, []);
 
   const handleGenerate = async (data: CrawledData) => {
+    // 이미 실행 중이면 중복 실행 방지
+    if (isGeneratingRef.current) return;
+    
+    isGeneratingRef.current = true;
     setGenerating(true);
     setError(null);
     setGeneratedArticle(null);
@@ -104,6 +114,7 @@ function GeneratePageContent() {
       });
     } finally {
       setGenerating(false);
+      isGeneratingRef.current = false;
     }
   };
 

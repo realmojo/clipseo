@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
 // @ts-expect-error - wpapi 타입 정의가 없음
 import WPAPI from "wpapi";
+import { googleIndexingApi, naverIndexingApi } from "./indexing";
 
 function sanitizeHtml(html: string): string {
   // 1. Remove scripts
@@ -57,11 +58,15 @@ export async function POST(req: NextRequest) {
         .create({
           title: article.title,
           content: sanitizeHtml(article.html),
-          status: "draft", // 초안으로 저장
+          categories: [5],
+          status: "publish", // 초안으로 저장
           slug: article.slug,
           excerpt: article.metaDescription || "",
+          featured_media: article.featuredImageId,
           // featured_media는 이미지 ID가 필요하므로 나중에 추가 가능
         });
+
+      console.log(post);
 
       const duration = (Date.now() - startTime) / 1000;
       logger.info(
@@ -72,6 +77,8 @@ export async function POST(req: NextRequest) {
         }
       );
 
+      await googleIndexingApi(post.link);
+      await naverIndexingApi(post.link);
       return NextResponse.json({
         status: "ok",
         postId: post.id,

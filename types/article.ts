@@ -21,6 +21,7 @@ export interface GeneratedArticle {
   metaDescription: string;
   html: string;
   featuredImage: string;
+  featuredImageId: number;
 }
 
 export interface JobResponse {

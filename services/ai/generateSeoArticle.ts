@@ -15,8 +15,7 @@ async function validateAndclean(data: CrawledData) {
 }
 
 async function attemptGeneration(data: CrawledData): Promise<GeneratedArticle> {
-  const prompt = `
-You are a senior SEO strategist and professional content writer.
+  const prompt = `You are a senior SEO strategist and professional content writer.
 
 This task is NOT summarization.
 This task is to PLAN and WRITE a brand-new SEO article
@@ -47,7 +46,6 @@ STEP 1: TOPIC & SEARCH QUERY DEFINITION (MANDATORY)
 Before writing, you MUST internally determine:
 
 1) The most likely PRIMARY SEARCH QUERY a user would type into Google
-   (e.g. "why women consider 100 million won salary low")
 
 2) The PRIMARY SEARCH INTENT:
    - Informational
@@ -59,19 +57,18 @@ Before writing, you MUST internally determine:
    - Who is searching this?
    - What confusion, curiosity, or concern do they have?
 
-You must base the entire article on THIS interpretation,
-not on the structure or wording of the source.
+Base the article entirely on this interpretation.
 
 -----------------------------------
 STEP 2: CONTENT STRATEGY (INTERNAL REASONING)
 -----------------------------------
 
-Plan the article as if you are publishing on a trusted blog:
+Plan the article as if publishing on a trusted blog:
 
-- What context does the reader need first?
-- What misconceptions should be clarified?
-- What social, economic, or psychological factors are involved?
-- What makes this explanation more useful than YouTube comments?
+- Required background context
+- Common misconceptions
+- Social, economic, or psychological factors
+- Why this article is more useful than comments or short videos
 
 -----------------------------------
 STEP 3: WRITING REQUIREMENTS
@@ -83,55 +80,76 @@ STEP 3: WRITING REQUIREMENTS
 - No filler or repetition
 
 2) Structure (STRICT)
-- One clear H1 (SEO-optimized, click-worthy but honest)
+- DO NOT use <h1> tag
+- Start content directly with introduction paragraphs
 - 5–7 H2 sections
 - H3 subsections where helpful
-- Natural progression from background → analysis → insights
+- Natural flow: background → analysis → insight
 
 3) Required Sections
 - Introduction: why this topic is being searched now
-- Core analysis sections (causes, context, perspectives)
+- Core analysis sections
 - Practical insights or examples
-- FAQ section (minimum 3 real search questions)
-- Summary / Key Takeaways box
+- FAQ section (minimum 3 real user questions)
+- Summary / Key Takeaways section
+
+-----------------------------------
+INTERACTIVE CTA BUTTONS (MANDATORY)
+-----------------------------------
+
+You MUST include exactly THREE (3) clickable CTA buttons
+using <a> tags (NOT <button>).
+
+Rules:
+- Use semantic, natural anchor text
+- Do NOT use promotional or exaggerated language
+- Buttons must feel helpful, not salesy
+- Use placeholder links (#)
+
+Placement:
+1) One CTA immediately after the introduction
+2) One CTA after a major analysis section (middle of article)
+3) One CTA near the end, before the summary
+
+Example format:
+
+<a href="#" class="cta-button">관련 주제 더 알아보기</a>
 
 -----------------------------------
 WRITING STYLE & TONE
 -----------------------------------
 
 - Written for Korean readers
-- Natural, conversational but authoritative
-- Explain concepts clearly, assume intelligent readers
-- Avoid YouTube-style language or clickbait tone
+- Conversational but authoritative
+- No YouTube-style clickbait tone
 - No AI disclaimers
-- No phrases like:
+- Avoid phrases like:
   "In this article, we will..."
 
 -----------------------------------
 SEO OPTIMIZATION (CONTROLLED)
 -----------------------------------
 
-- Identify:
-  - 1 primary keyword
-  - 3–5 secondary keywords
-- Use keywords naturally
-- Include semantic and contextual variations
-- Do NOT stuff keywords
+Identify:
+- 1 primary keyword
+- 3–5 secondary keywords
+
+Use naturally with semantic variations.
 
 Generate:
-- SEO title (≤ 60 characters)
+- SEO title (≤ 60 chars)
 - URL slug
-- Meta description (≤ 155 characters)
+- Meta description (≤ 155 chars)
 
 -----------------------------------
 ADSENSE & CONTENT SAFETY
 -----------------------------------
 
 The article must:
-- Be informational and opinion-based, not defamatory
-- Avoid exaggerated or absolute claims
-- Avoid targeting or attacking specific individuals
-- Provide value beyond commentary or gossip
+- Be informational and opinion-based
+- Avoid defamatory or targeting language
+- Avoid absolute claims
+- Provide value beyond gossip or commentary
 
 -----------------------------------
 OUTPUT FORMAT (STRICT JSON)
@@ -143,23 +161,23 @@ Return ONLY valid JSON:
   "title": "...",
   "slug": "...",
   "metaDescription": "...",
-  "html": "<article>...</article>",
+  "html": "<article>...</article>"
 }
 
 HTML rules:
-- Use only: h2, h3, p, ul, li, strong, table, figure
-- No scripts, no styles
-- Do NOT include html/head/body tags
+- Use only: h2, h3, p, ul, li, strong, table, figure, a
+- DO NOT use <h1>
+- No scripts or styles
+- No html/head/body tags
 
 -----------------------------------
 FINAL QUALITY CHECK
 -----------------------------------
 
 Before returning:
-- Does this read like a real expert-written blog post?
-- Would a user bookmark or share this?
-- Could this rank even if the YouTube video did not exist?
-`;
+- Does this feel like a real expert blog?
+- Would users bookmark or share it?
+- Could it rank even without the original video?`;
 
   const completion = await openai.chat.completions.create({
     model: "gpt-4.1",

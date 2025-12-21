@@ -121,14 +121,25 @@ const generateFeaturedImage = async (title: string) => {
 
     console.log(`📐 이미지 원본 크기: ${metadata.width}x${metadata.height}`);
 
-    // 크롭할 영역 설정 (1024x960 또는 이미지 크기 중 작은 값)
-    const targetWidth = 1024;
-    const targetHeight = 960;
+    // 크롭할 영역 설정 (원본 크기를 4:3 비율로 자르기)
+    let extractWidth: number;
+    let extractHeight: number;
 
-    const extractWidth = Math.min(targetWidth, metadata.width);
-    const extractHeight = Math.min(targetHeight, metadata.height);
+    // 원본 이미지의 비율 계산
+    const originalRatio = metadata.width / metadata.height;
+    const targetRatio = 4 / 3; // 4:3 비율
 
-    console.log(`✂️ 크롭 영역: ${extractWidth}x${extractHeight}`);
+    if (originalRatio > targetRatio) {
+      // 원본이 더 넓은 경우, height를 기준으로 width 계산
+      extractHeight = metadata.height;
+      extractWidth = Math.floor(metadata.height * targetRatio);
+    } else {
+      // 원본이 더 높은 경우, width를 기준으로 height 계산
+      extractWidth = metadata.width;
+      extractHeight = Math.floor(metadata.width / targetRatio);
+    }
+
+    console.log(`✂️ 크롭 영역 (4:3 비율): ${extractWidth}x${extractHeight}`);
 
     await image
       .extract({
@@ -156,7 +167,7 @@ const generateFeaturedImage = async (title: string) => {
       console.warn("⚠️ 임시 파일 정리 실패:", cleanupErr.message);
     }
 
-    return wpImageInfo.source_url;
+    return wpImageInfo;
   } catch (err: any) {
     console.error(`❌ 다운로드 실패:`, err.message);
 
@@ -197,22 +208,19 @@ export async function POST(req: NextRequest) {
     // Generate SEO article
     let generatedArticle;
     try {
-      // generatedArticle = await generateSeoArticle(crawledData as CrawledData);
-      generatedArticle = generateMockup.data as GeneratedArticle;
+      generatedArticle = await generateSeoArticle(crawledData as CrawledData);
 
-      // cropPath,
-      // wpToken,
-      // title
-      // generatedArticle.featuredImage = await generateFeaturedImage(
-      //   generatedArticle.title
-      // );
+      const wpImageInfo = await generateFeaturedImage(crawledData.title);
 
+      console.log(wpImageInfo);
+
+      // generatedArticle = generateMockup.data as GeneratedArticle;
       generatedArticle.html = `${getImageHtml(
-        generatedArticle.featuredImage,
+        wpImageInfo.source_url,
         generatedArticle.title.replace(/\s+/g, "-")
       )}${generatedArticle.html}`;
-
-      // "featuredImagePrompt": "..."
+      generatedArticle.featuredImageId = wpImageInfo.id;
+      console.log(generatedArticle.html);
     } catch (error: any) {
       logger.error(`AI Generation failed: ${error.message}`);
       return NextResponse.json(

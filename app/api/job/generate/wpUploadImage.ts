@@ -42,7 +42,7 @@ export const uploadToWordPress = async (
 
     console.log("✅ 이미지 업로드 성공:", response);
     return response;
-  } catch (err) {
+  } catch (err: any) {
     console.error("❌ 이미지 업로드 실패:", err.message || err);
     throw err;
   }

@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 
 export default function Page() {
   const router = useRouter();
-  const [url, setUrl] = useState("https://www.youtube.com/watch?v=uzMbYTXYqAQ");
+  const [url, setUrl] = useState("https://www.youtube.com/watch?v=4eFLGiSw7l8");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -24,20 +24,12 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { CrawledData, GeneratedArticle } from "@/types/article";
+import { CrawledData } from "@/types/article";
 import { useSearchParams, useRouter } from "next/navigation";
-import { generateMockup } from "../api/job/generate/generateMockup";
 
 interface CrawlResponse {
   status: "ok" | "error";
   data?: CrawledData;
-  message?: string;
-  duration?: number;
-}
-
-interface GenerateResponse {
-  status: "ok" | "error";
-  data?: GeneratedArticle;
   message?: string;
   duration?: number;
 }
@@ -47,7 +39,7 @@ function CreatePageContent() {
   const searchParams = useSearchParams();
   const initialUrl = searchParams.get("url");
   const [url, setUrl] = useState(
-    initialUrl || "https://www.youtube.com/watch?v=uzMbYTXYqAQ"
+    initialUrl || "https://www.youtube.com/watch?v=4eFLGiSw7l8"
   );
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CrawlResponse | null>(null);
